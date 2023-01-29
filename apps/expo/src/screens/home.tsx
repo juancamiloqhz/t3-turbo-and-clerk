@@ -1,5 +1,4 @@
 import React from "react";
-
 import { Button, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { useAuth } from "@clerk/clerk-expo";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -26,24 +25,40 @@ const SignOut = () => {
 const PostCard: React.FC<{
   post: inferProcedureOutput<AppRouter["post"]["all"]>[number];
 }> = ({ post }) => {
+  // console.log("post", post);
+  const utils = trpc.useContext();
+  const { mutate } = trpc.post.delete.useMutation({
+    async onSuccess() {
+      await utils.post.all.invalidate();
+    },
+  });
   return (
     <View className="rounded-lg border-2 border-gray-500 p-4">
       <Text className="text-xl font-semibold text-[#cc66ff]">{post.title}</Text>
       <Text className="text-white">{post.content}</Text>
+      <TouchableOpacity
+        className="rounded bg-red-500 p-2"
+        onPress={() => {
+          mutate(post.id);
+        }}
+      >
+        <Text className="font-semibold text-white">Delete</Text>
+      </TouchableOpacity>
     </View>
   );
 };
 
 const CreatePost: React.FC = () => {
+  const [title, onChangeTitle] = React.useState("");
+  const [content, onChangeContent] = React.useState("");
   const utils = trpc.useContext();
   const { mutate } = trpc.post.create.useMutation({
     async onSuccess() {
       await utils.post.all.invalidate();
+      onChangeTitle("");
+      onChangeContent("");
     },
   });
-
-  const [title, onChangeTitle] = React.useState("");
-  const [content, onChangeContent] = React.useState("");
 
   return (
     <View className="flex flex-col border-t-2 border-gray-500 p-4">
@@ -51,15 +66,20 @@ const CreatePost: React.FC = () => {
         className="mb-2 rounded border-2 border-gray-500 p-2 text-white"
         onChangeText={onChangeTitle}
         placeholder="Title"
+        value={title}
       />
       <TextInput
         className="mb-2 rounded border-2 border-gray-500 p-2 text-white"
         onChangeText={onChangeContent}
         placeholder="Content"
+        value={content}
       />
       <TouchableOpacity
         className="rounded bg-[#cc66ff] p-2"
         onPress={() => {
+          if (!title || !content) {
+            return;
+          }
           mutate({
             title,
             content,
@@ -72,7 +92,7 @@ const CreatePost: React.FC = () => {
   );
 };
 
-export const HomeScreen = () => {
+export const HomeScreen = ({ navigation }: HomeProps) => {
   const postQuery = trpc.post.all.useQuery();
   const [showPost, setShowPost] = React.useState<string | null>(null);
 
@@ -80,8 +100,12 @@ export const HomeScreen = () => {
     <SafeAreaView className="bg-[#2e026d] bg-gradient-to-b from-[#2e026d] to-[#15162c]">
       <View className="h-full w-full p-4">
         <Text className="mx-auto pb-2 text-5xl font-bold text-white">
-          Create <Text className="text-[#cc66ff]">T3</Text> Turbo
+          Health <Text className="text-[#cc66ff]">Wizard</Text>
         </Text>
+        <Button
+          title="Go to Account"
+          onPress={() => navigation.navigate("Account")}
+        />
 
         <View className="py-2">
           {showPost ? (

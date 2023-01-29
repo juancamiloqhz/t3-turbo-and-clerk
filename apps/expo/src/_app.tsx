@@ -1,13 +1,11 @@
 import { StatusBar } from "expo-status-bar";
 import React from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { TRPCProvider } from "./utils/trpc";
 
-import { HomeScreen } from "./screens/home";
-import { SignInSignUpScreen } from "./screens/signin";
-import { ClerkProvider, SignedIn, SignedOut } from "@clerk/clerk-expo";
+import { ClerkProvider } from "@clerk/clerk-expo";
 import { tokenCache } from "./utils/cache";
 import { CLERK_PUBLISHABLE_KEY } from "./constants";
+import Navigation from "./navigation";
 
 export const App = () => {
   return (
@@ -15,17 +13,28 @@ export const App = () => {
       publishableKey={CLERK_PUBLISHABLE_KEY}
       tokenCache={tokenCache}
     >
-      <SignedIn>
-        <TRPCProvider>
-          <SafeAreaProvider>
-            <HomeScreen />
-            <StatusBar />
-          </SafeAreaProvider>
-        </TRPCProvider>
-      </SignedIn>
-      <SignedOut>
-        <SignInSignUpScreen />
-      </SignedOut>
+      <SafeAreaProvider>
+        <Navigation />
+        <StatusBar />
+      </SafeAreaProvider>
+      {/* <NavigationContainer>
+        <Stack.Navigator>
+          <>
+            <SignedIn>
+              <TRPCProvider>
+                <SafeAreaProvider>
+                  <Stack.Screen name="Home" component={HomeScreen} />
+                  <Stack.Screen name="Account" component={AccountScreen} />
+                  <StatusBar />
+                </SafeAreaProvider>
+              </TRPCProvider>
+            </SignedIn>
+            <SignedOut>
+              <Stack.Screen name="Login" component={SignInSignUpScreen} />
+            </SignedOut>
+          </>
+        </Stack.Navigator>
+      </NavigationContainer> */}
     </ClerkProvider>
   );
 };
